@@ -4,11 +4,20 @@ import PropTypes from 'prop-types';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '@/styles/globals.css';
 
+import { AuthProvider } from '@/utils/context/authContext'; // ✅ Make sure this path is correct
+
 const inter = Inter({ subsets: ['latin'] });
+
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}>
+        <AuthProvider>
+          {' '}
+          {/* ✅ Wrap your entire app */}
+          {children}
+        </AuthProvider>
+      </body>
     </html>
   );
 }
@@ -17,15 +26,12 @@ RootLayout.propTypes = {
   children: PropTypes.node.isRequired,
 };
 
-// You can manage the metadata, tab content and info about your app dynamically using this. It will work on every page in your app:
 export const generateMetadata = async ({ params }) => {
-  // Destructure parameters or fetch necessary data here
-  const { slug } = params; // Example of accessing dynamic route params
+  const { slug } = params;
 
   return {
-    title: `TEMPLATE - ${slug || 'HOME'}`, // Dynamically set the title using route parameters
-    description: `This is a dynamically generated description for ${slug}.`, // Dynamic description
-    // Add other metadata fields as needed, like keywords, open graph tags, etc.
+    title: `TEMPLATE - ${slug || 'HOME'}`,
+    description: `This is a dynamically generated description for ${slug}.`,
     keywords: [`${slug}`, 'dynamic', 'page'],
     openGraph: {
       title: `Open Graph Title for ${slug}`,

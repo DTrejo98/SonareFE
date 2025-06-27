@@ -1,112 +1,90 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation'; // Import useRouter
-import { useAuth } from '../utils/context/authContext';
-import { getSingleUser } from '../api/UserData';
-import UserForm from '../components/Forms/UserForm';
+import { useRouter } from 'next/navigation';
+import PropTypes from 'prop-types';
+import FloatingLabel from 'react-bootstrap/FloatingLabel';
+import Form from 'react-bootstrap/Form';
+import { Button } from 'react-bootstrap';
+import { useAuth } from '@/utils/context/authContext'; // ✅ Use alias for cleaner imports
+import { createUser, updateUser } from '@/api/UserData'; // ✅ Adjust if your path is different
 
-function Home() {
-  const { user } = useAuth(); // Get current authenticated user from auth context
-  const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true); // Add a loading state
-  const router = useRouter(); // Initialize the router
+const initialState = {
+  username: '',
+  email: '',
+  password: '',
+  uid: '',
+};
 
+function UserForm({ obj = initialState }) {
+  const { user } = useAuth();
+  const [formInput, setFormInput] = useState(initialState);
+  const router = useRouter();
+
+  // Populate form if editing or user is logged in
   useEffect(() => {
     if (user) {
-      getSingleUser(user.uid)
-        .then((data) => {
-          setProfile(data); // Store profile data in state
-          setLoading(false); // Stop loading
-        })
-        .catch((error) => {
-          console.error('Error fetching profile:', error);
-          setLoading(false); // Stop loading in case of error
-        });
-    } else {
-      setLoading(false); // No user, stop loading
+      setFormInput({
+        username: obj.username || '',
+        email: obj.email || '',
+        password: '', // never prefill password
+        uid: obj.uid || user.uid,
+      });
     }
-  }, [user]);
+  }, [obj, user]);
 
-  // If loading, show a loading message
-  if (loading) {
-    return (
-      <div
-        className="text-center d-flex flex-column justify-content-center align-content-center"
-        style={{
-          height: '90vh',
-          padding: '30px',
-          maxWidth: '400px',
-          margin: '0 auto',
-        }}
-      >
-        <h1>Loading...</h1>
-      </div>
-    );
-  }
-
-  // If no user is logged in, ask them to sign in
-  if (!user) {
-    return (
-      <div
-        className="text-center d-flex flex-column justify-content-center align-content-center"
-        style={{
-          height: '90vh',
-          padding: '30px',
-          maxWidth: '400px',
-          margin: '0 auto',
-        }}
-      >
-        <h1>Welcome to Next.js!</h1>
-        <p>Please sign in with Google to continue.</p>
-      </div>
-    );
-  }
-
-  // If the profile exists, show profile info
-  if (profile) {
-    return (
-      <div
-        className="text-center d-flex flex-column justify-content-center align-content-center"
-        style={{
-          height: '90vh',
-          padding: '30px',
-          maxWidth: '400px',
-          margin: '0 auto',
-        }}
-      >
-        <h1>Welcome back, {profile.username}!</h1>
-        <p>
-          <strong>Email:</strong> {profile.email}
-        </p>
-        <p>
-          <strong>Role:</strong> {profile.role}
-        </p>
-      </div>
-    );
-  }
-
-  // If no profile is found, show the NewUserForm to complete the profile
-  const handleProfileUpdate = () => {
-    // Re-fetch user data or redirect after creating account
-    router.reload(); // This will reload the page and fetch updated data
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormInput((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const payload = {
+      ...formInput,
+      uid: user.uid,
+    };
+
+    if (obj.id) {
+      updateUser({ ...payload, id: obj.id }).then(() => router.push(`/profile/${user.uid}`));
+    } else {
+      createUser(payload).then(() => router.push(`/profile/${user.uid}`));
+    }
+  };
+
+  if (!user) return <p className="text-white">Loading...</p>;
+
   return (
-    <div
-      className="text-center d-flex flex-column justify-content-center align-content-center"
-      style={{
-        height: '90vh',
-        padding: '30px',
-        maxWidth: '400px',
-        margin: '0 auto',
-      }}
-    >
-      <h1>Welcome to Next.js!</h1>
-      <p>Your profile has not been completed yet. Please fill out your information.</p>
-      <UserForm obj={{ uid: user.uid }} onSuccess={handleProfileUpdate} /> {/* Pass onSuccess callback */}
-    </div>
+    <Form onSubmit={handleSubmit} className="text-black">
+      <h2 className="text-white mt-5">{obj.id ? 'Update' : 'Create'} Account</h2>
+
+      <FloatingLabel controlId="floatingInput1" label="Username" className="mb-3">
+        <Form.Control type="text" placeholder="Enter Username" name="username" value={formInput.username} onChange={handleChange} required />
+      </FloatingLabel>
+
+      <FloatingLabel controlId="floatingInput2" label="Email" className="mb-3">
+        <Form.Control type="email" placeholder="Enter Email" name="email" value={formInput.email} onChange={handleChange} required />
+      </FloatingLabel>
+
+      <FloatingLabel controlId="floatingPassword" label="Password" className="mb-3">
+        <Form.Control type="password" placeholder="Enter Password" name="password" value={formInput.password} onChange={handleChange} required={!obj.id} />
+      </FloatingLabel>
+
+      <Button type="submit" className="mt-2">
+        {obj.id ? 'Update' : 'Create'} Account
+      </Button>
+    </Form>
   );
 }
 
-export default Home;
+UserForm.propTypes = {
+  obj: PropTypes.shape({
+    id: PropTypes.number,
+    uid: PropTypes.string,
+    username: PropTypes.string,
+    email: PropTypes.string,
+    password: PropTypes.string,
+  }),
+};
+
+export default UserForm;

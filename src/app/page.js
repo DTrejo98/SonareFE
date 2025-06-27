@@ -1,34 +1,35 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation'; // Import useRouter
+import { useRouter } from 'next/navigation';
+import { Button } from 'react-bootstrap';
 import { useAuth } from '../utils/context/authContext';
 import { getSingleUser } from '../api/UserData';
 import UserForm from '../components/Forms/UserForm';
+import { signIn } from '../utils/auth';
 
 function Home() {
-  const { user } = useAuth(); // Get current authenticated user from auth context
+  const { user } = useAuth();
   const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true); // Add a loading state
-  const router = useRouter(); // Initialize the router
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
     if (user) {
       getSingleUser(user.uid)
         .then((data) => {
-          setProfile(data); // Store profile data in state
-          setLoading(false); // Stop loading
+          setProfile(data);
+          setLoading(false);
         })
         .catch((error) => {
           console.error('Error fetching profile:', error);
-          setLoading(false); // Stop loading in case of error
+          setLoading(false);
         });
     } else {
-      setLoading(false); // No user, stop loading
+      setLoading(false);
     }
   }, [user]);
 
-  // If loading, show a loading message
   if (loading) {
     return (
       <div
@@ -45,7 +46,6 @@ function Home() {
     );
   }
 
-  // If no user is logged in, ask them to sign in
   if (!user) {
     return (
       <div
@@ -57,13 +57,15 @@ function Home() {
           margin: '0 auto',
         }}
       >
-        <h1>Welcome to Next.js!</h1>
+        <h1>Welcome to Sonare!</h1>
         <p>Please sign in with Google to continue.</p>
+        <Button onClick={signIn} variant="primary">
+          Sign in with Google
+        </Button>
       </div>
     );
   }
 
-  // If the profile exists, show profile info
   if (profile) {
     return (
       <div
@@ -79,17 +81,12 @@ function Home() {
         <p>
           <strong>Email:</strong> {profile.email}
         </p>
-        <p>
-          <strong>Role:</strong> {profile.role}
-        </p>
       </div>
     );
   }
 
-  // If no profile is found, show the NewUserForm to complete the profile
   const handleProfileUpdate = () => {
-    // Re-fetch user data or redirect after creating account
-    router.reload(); // This will reload the page and fetch updated data
+    router.reload();
   };
 
   return (
@@ -102,9 +99,9 @@ function Home() {
         margin: '0 auto',
       }}
     >
-      <h1>Welcome to Next.js!</h1>
+      <h1>Welcome to Sonare!</h1>
       <p>Your profile has not been completed yet. Please fill out your information.</p>
-      <UserForm obj={{ uid: user.uid }} onSuccess={handleProfileUpdate} /> {/* Pass onSuccess callback */}
+      <UserForm obj={{ uid: user.uid }} onSuccess={handleProfileUpdate} />
     </div>
   );
 }
