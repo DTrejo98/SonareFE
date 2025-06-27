@@ -3,20 +3,20 @@ import { Card, Button } from 'react-bootstrap';
 import Link from 'next/link';
 import PropTypes from 'prop-types';
 
-export default function ProductCard({ productObj }) {
+export default function ClipCard({ clipObj }) {
   return (
     <div className="m-2">
       <Card style={{ width: '18rem' }}>
-        <Card.Img variant="top" src={productObj.imageUrl} /> {/* Assuming you have an imageUrl for each product */}
+        <Card.Img variant="top" src={clipObj.imageUrl} />
         <Card.Body>
-          <Card.Title>{productObj.name}</Card.Title>
-          <Card.Text>{productObj.description}</Card.Text>
+          <Card.Title>{clipObj.name}</Card.Title>
+          <Card.Text>{clipObj.description}</Card.Text>
           <Card.Text>
-            <strong>${productObj.price}</strong>
+            <strong>${clipObj.price}</strong>
           </Card.Text>
 
           {/* View Details Button */}
-          <Link href={`/product/details/${productObj.id}`} passHref>
+          <Link href={`/product/details/${clipObj.id}`} passHref>
             <Button variant="primary">View Details</Button>
           </Link>
         </Card.Body>
@@ -26,8 +26,8 @@ export default function ProductCard({ productObj }) {
 }
 
 // Prop validation using PropTypes
-ProductCard.propTypes = {
-  productObj: PropTypes.shape({
+ClipCard.propTypes = {
+  clipObj: PropTypes.shape({
     id: PropTypes.number.isRequired,
     name: PropTypes.string.isRequired,
     description: PropTypes.string,

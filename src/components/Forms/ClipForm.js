@@ -7,7 +7,7 @@ import FloatingLabel from 'react-bootstrap/FloatingLabel';
 import Form from 'react-bootstrap/Form';
 import { Button } from 'react-bootstrap';
 import { useAuth } from '../../utils/context/authContext';
-import { createProduct, updateProduct } from '../../api/ProductData';
+import { createClip, updateClip } from '../../api/ClipData';
 
 const initialState = {
   name: '',
@@ -17,7 +17,7 @@ const initialState = {
   category: '',
 };
 
-function ProductForm({ obj = initialState }) {
+function ClipForm({ obj = initialState }) {
   const { user } = useAuth();
   const [formInput, setFormInput] = useState(initialState);
   const router = useRouter();
@@ -42,9 +42,9 @@ function ProductForm({ obj = initialState }) {
     e.preventDefault();
     const payload = { ...formInput, sellerId: user.uid }; // Set the sellerId to the logged-in user's UID
     if (obj.id) {
-      updateProduct(payload).then(() => router.push('/product'));
+      updateClip(payload).then(() => router.push('/product'));
     } else {
-      createProduct(payload).then(() => router.push('/product'));
+      createClip(payload).then(() => router.push('/product'));
     }
   };
 
@@ -83,7 +83,7 @@ function ProductForm({ obj = initialState }) {
   );
 }
 
-ProductForm.propTypes = {
+ClipForm.propTypes = {
   obj: PropTypes.shape({
     name: PropTypes.string,
     description: PropTypes.string,
@@ -94,4 +94,4 @@ ProductForm.propTypes = {
   }),
 };
 
-export default ProductForm;
+export default ClipForm;
